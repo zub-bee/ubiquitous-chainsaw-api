@@ -63,7 +63,7 @@ export async function createUsersTable() {
 
 export async function indexTable() {
   await db.query(
-    `CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_profiles_country_gender ON profiles(country_id, gender);`,
+    `CREATE INDEX IF NOT EXISTS idx_profiles_country_gender ON profiles(country_id, gender);`,
   );
 }
 
