@@ -1,4 +1,4 @@
-# Profiles API - Stage One
+# Ubiquitous Chainsaw Profiles API
 
 Node.js Express API for profile management with GitHub OAuth, natural language search, and a CLI tool. Integrates Genderize.io, Agify.io, Nationalize.io, and REST Countries APIs with PostgreSQL + Redis.
 
