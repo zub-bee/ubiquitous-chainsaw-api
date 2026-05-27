@@ -458,14 +458,23 @@ export async function logoutUser(req, res) {
     // change is_active to false
     await logoutUserDB(userId);
 
-    // Clear both cookies
-    res.clearCookie("access_token");
-    res.clearCookie("refresh_token");
+    const clearOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    };
+    res.clearCookie("access_token", clearOptions);
+    res.clearCookie("refresh_token", clearOptions);
   } catch (err) {
     if (err.name === "TokenExpiredError") {
       // Even if tokens are expired, clear both cookies
-      res.clearCookie("access_token");
-      res.clearCookie("refresh_token");
+      const clearOptions = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      };
+      res.clearCookie("access_token", clearOptions);
+      res.clearCookie("refresh_token", clearOptions);
       return res.status(200).json({ message: "Logged out successfully" });
     }
 
