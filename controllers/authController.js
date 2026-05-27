@@ -319,7 +319,9 @@ export async function handleGitHubCliCallback(req, res) {
 
 export async function refreshToken(req, res) {
   // Get refresh token from body (CLI) or cookie (Web)
-  const refresh_token = req.body.refresh_token || req.cookies.refresh_token;
+  const body = req.body || {};
+  const cookies = req.cookies || {};
+  const refresh_token = body.refresh_token || cookies.refresh_token;
 
   if (!refresh_token) {
     return res
@@ -408,9 +410,10 @@ export async function refreshToken(req, res) {
 export async function logoutUser(req, res) {
   // Get refresh token from body (CLI) or cookie (Web)
   const cookies = req.cookies || {};
-  const refresh_token = req.body.refresh_token || cookies.refresh_token;
+  const body = req.body || {};
+  const refresh_token = body.refresh_token || cookies.refresh_token;
   const access_token =
-    req.body.access_token ||
+    body.access_token ||
     cookies.access_token ||
     (req.headers.authorization?.startsWith("Bearer ")
       ? req.headers.authorization.slice(7)

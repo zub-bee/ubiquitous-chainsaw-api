@@ -64,13 +64,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// DEBUG: remove after fixing logout
-app.use("/auth/logout", (req, res, next) => {
-  console.log("DEBUG cookies:", req.cookies);
-  console.log("DEBUG cookie header:", req.headers.cookie);
-  next();
-});
-
 app.use("/auth", authLimiter, authRouter);
 
 app.use("/api/classify", apiLimiter, authenticateUser, classifyRouter);
