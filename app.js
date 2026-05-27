@@ -11,6 +11,7 @@ import { classifyRouter } from "./routes/classifyRouter.js";
 import { profilesRouter } from "./routes/profilesRouter.js";
 import { usersRouter } from "./routes/usersRouter.js";
 import { createTable, indexTable, createUsersTable } from "./db/createTable.js";
+import { seedProfiles } from "./db/seedProfiles.js";
 import { redisCacheMiddleware } from "./middlewares/redis.js";
 import { normalizeSearchQuery } from "./middlewares/normalizeSearchQuery.js";
 import { authRouter } from "./routes/auth.js";
@@ -107,6 +108,15 @@ startServer();
 async function startServer() {
   try {
     await createTable();
+
+    // Seed 10k profiles if table is empty
+    const { db } = await import("./db/openDBConnection.js");
+    const { rowCount } = await db.query("SELECT 1 FROM profiles LIMIT 1");
+    if (rowCount === 0) {
+      console.log("No profiles found. Seeding 10,000 profiles...");
+      await seedProfiles();
+    }
+
     app.listen(PORT, "0.0.0.0", () =>
       console.log(`This server is listening on port: ${PORT}`),
     );
