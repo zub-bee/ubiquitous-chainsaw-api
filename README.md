@@ -2,8 +2,8 @@
 
 Node.js Express API for profile management with GitHub OAuth, natural language search, and a CLI tool. Integrates Genderize.io, Agify.io, Nationalize.io, and REST Countries APIs with PostgreSQL + Redis.
 
-**API:** https://ubiquitous-chainsaw-production-5f71.up.railway.app  
-**Web Portal:** https://insighta-web-portal-production.up.railway.app
+**API:** [https://ubiquitous-chainsaw-production-73a8.up.railway.app](https://ubiquitous-chainsaw-production-73a8.up.railway.app)
+**Web Portal:** [https://insighta-web-portal.up.railway.app](https://insighta-web-portal.up.railway.app/)
 
 ## System Architecture
 
