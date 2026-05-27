@@ -180,9 +180,9 @@ export async function handleGitHubCallback(req, res) {
     res.cookie("refresh_token", refreshToken, cookieOptions);
 
     // Redirect to dashboard (no tokens exposed to client)
-    const redirectUrl = req.get("Referer")
-      ? process.env.FRONTEND_URL + "/dashboard.html"
-      : "http://localhost:5500/dashboard.html";
+    const redirectUrl =
+      process.env.FRONTEND_URL + "/dashboard.html" ||
+      "http://localhost:5500/dashboard.html";
     res.redirect(redirectUrl);
   } catch (err) {
     console.log(err.message);
