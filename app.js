@@ -35,6 +35,9 @@ app.use(
   }),
 );
 
+app.use(express.json());
+app.use(cookieParser());
+
 app.use(
   session({
     store: new RedisStore({ client: redisClient }),
@@ -48,17 +51,6 @@ app.use(
     },
   }),
 );
-
-await createTable();
-
-await createUsersTable();
-
-await indexTable();
-
-// Middleware to parse JSON bodies
-app.use(express.json());
-
-app.use(cookieParser());
 
 // Request logging middleware
 app.use((req, res, next) => {
@@ -108,6 +100,10 @@ startServer();
 async function startServer() {
   try {
     await createTable();
+
+    await createUsersTable();
+
+    await indexTable();
 
     // Seed 10k profiles if table is empty
     const { db } = await import("./db/openDBConnection.js");
