@@ -407,10 +407,11 @@ export async function refreshToken(req, res) {
 
 export async function logoutUser(req, res) {
   // Get refresh token from body (CLI) or cookie (Web)
-  const refresh_token = req.body.refresh_token || req.cookies.refresh_token;
+  const cookies = req.cookies || {};
+  const refresh_token = req.body.refresh_token || cookies.refresh_token;
   const access_token =
     req.body.access_token ||
-    req.cookies.access_token ||
+    cookies.access_token ||
     (req.headers.authorization?.startsWith("Bearer ")
       ? req.headers.authorization.slice(7)
       : null);
