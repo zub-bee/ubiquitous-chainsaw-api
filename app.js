@@ -95,7 +95,7 @@ app.use((req, res) => {
   });
 });
 
-startServer();
+await startServer();
 
 async function startServer() {
   try {

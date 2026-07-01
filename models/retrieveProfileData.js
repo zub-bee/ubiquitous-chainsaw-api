@@ -1,6 +1,42 @@
 import { db } from "../db/openDBConnection.js";
 import { parseSearchQuery } from "../util/parseSearchQuery.js";
 
+const SUPPORTED_SORT_COLUMNS = ["age", "created_at", "gender_probability"];
+
+export function getPaginationSettings(query = {}) {
+  const requestedPage = Number.parseInt(query.page, 10);
+  const requestedLimit = Number.parseInt(query.limit, 10);
+
+  const currentPage =
+    Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+  const currentLimit =
+    Number.isInteger(requestedLimit) && requestedLimit > 0
+      ? Math.min(requestedLimit, 50)
+      : 10;
+  const offset = (currentPage - 1) * currentLimit;
+
+  return {
+    currentPage,
+    currentLimit,
+    offset,
+  };
+}
+
+export function buildSortClause(query = {}) {
+  const { sort_by, order } = query;
+
+  if (!sort_by || !SUPPORTED_SORT_COLUMNS.includes(sort_by)) {
+    return null;
+  }
+
+  const normalizedOrder =
+    order && ["ASC", "DESC"].includes(String(order).toUpperCase())
+      ? String(order).toUpperCase()
+      : "ASC";
+
+  return ` ORDER BY ${sort_by} ${normalizedOrder}`;
+}
+
 export async function retrieveProfileDataByQueryParams(
   query,
   baseUrl = "/api/profiles",
@@ -14,9 +50,6 @@ export async function retrieveProfileDataByQueryParams(
     min_gender_probability,
     min_country_probability,
     sort_by,
-    order,
-    page,
-    limit,
   } = query;
 
   let sqlQuery = "SELECT * FROM profiles";
@@ -69,29 +102,18 @@ export async function retrieveProfileDataByQueryParams(
   // Capture filter params before appending LIMIT/OFFSET params
   const filterParams = [...param];
 
-  // Add ORDER BY clause (column names can't be parameterized)
-  if (
-    sort_by &&
-    ["age", "created_at", "gender_probability"].includes(sort_by)
-  ) {
-    const orderDirection =
-      order && ["ASC", "DESC"].includes(order.toUpperCase())
-        ? order.toUpperCase()
-        : "ASC";
-    sqlQuery += ` ORDER BY ${sort_by} ${orderDirection}`;
-  } else if (
-    sort_by &&
-    !["age", "created_at", "gender_probability"].includes(sort_by)
-  ) {
+  if (sort_by && !SUPPORTED_SORT_COLUMNS.includes(sort_by)) {
     return {
       message: "Invalid query parameters",
     };
   }
 
-  // Add pagination
-  const currentPage = parseInt(page) || 1;
-  const currentLimit = Math.min(parseInt(limit) || 10, 50);
-  const offset = (currentPage - 1) * currentLimit;
+  const sortClause = buildSortClause(query);
+  if (sortClause) {
+    sqlQuery += sortClause;
+  }
+
+  const { currentPage, currentLimit, offset } = getPaginationSettings(query);
 
   sqlQuery += ` LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
   param.push(currentLimit, offset);
@@ -141,7 +163,6 @@ export async function retrieveProfileDataForExport(query) {
     min_gender_probability,
     min_country_probability,
     sort_by,
-    order,
   } = query;
 
   let sqlQuery = "SELECT * FROM profiles";
@@ -189,23 +210,15 @@ export async function retrieveProfileDataForExport(query) {
     sqlQuery += " WHERE " + filterConditions.join(" AND ");
   }
 
-  // Add ORDER BY clause (column names can't be parameterized)
-  if (
-    sort_by &&
-    ["age", "created_at", "gender_probability"].includes(sort_by)
-  ) {
-    const orderDirection =
-      order && ["ASC", "DESC"].includes(order.toUpperCase())
-        ? order.toUpperCase()
-        : "ASC";
-    sqlQuery += ` ORDER BY ${sort_by} ${orderDirection}`;
-  } else if (
-    sort_by &&
-    !["age", "created_at", "gender_probability"].includes(sort_by)
-  ) {
+  if (sort_by && !SUPPORTED_SORT_COLUMNS.includes(sort_by)) {
     return {
       message: "Invalid query parameters",
     };
+  }
+
+  const sortClause = buildSortClause(query);
+  if (sortClause) {
+    sqlQuery += sortClause;
   }
 
   try {
@@ -225,7 +238,7 @@ export async function retrieveProfileDataBySearchParams(
   baseUrl = "/api/profiles/search",
   parsedFilters = null,
 ) {
-  const { q, page, limit } = query;
+  const { q, sort_by } = query;
 
   if (!q && !parsedFilters) {
     return { message: "Invalid query parameters" };
@@ -269,16 +282,24 @@ export async function retrieveProfileDataBySearchParams(
     return { message: "Unable to interpret query" };
   }
 
+  if (sort_by && !SUPPORTED_SORT_COLUMNS.includes(sort_by)) {
+    return {
+      message: "Invalid query parameters",
+    };
+  }
+
   const whereClause = " WHERE " + conditions.join(" AND ");
   sqlQuery += whereClause;
+
+  const sortClause = buildSortClause(query);
+  if (sortClause) {
+    sqlQuery += sortClause;
+  }
 
   // Capture filter params before appending LIMIT/OFFSET params
   const filterParams = [...param];
 
-  // Add pagination
-  const currentPage = parseInt(page) || 1;
-  const currentLimit = Math.min(parseInt(limit) || 10, 50);
-  const offset = (currentPage - 1) * currentLimit;
+  const { currentPage, currentLimit, offset } = getPaginationSettings(query);
 
   sqlQuery += ` LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
   param.push(currentLimit, offset);

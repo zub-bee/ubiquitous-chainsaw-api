@@ -2,12 +2,12 @@ import hash from "object-hash";
 import redisClient from "../db/redisClient.js";
 
 function requestToKey(req) {
-  // For search requests, use the canonical parsed filters as the hash input so
-  // that semantically equivalent queries (e.g. "Nigerian females between ages
-  // 20 and 45" vs "Women aged 20–45 living in Nigeria") produce the same key.
+  // For search requests, use the canonical parsed filters and the raw query
+  // params as the hash input so semantically equivalent queries still share a
+  // cache key, while page/limit/sort changes remain distinct.
   const reqDataToHash = req.parsedFilters
-    ? { path: req.path, filters: req.parsedFilters }
-    : { query: req.query, body: req.body };
+    ? { path: req.path, filters: req.parsedFilters, query: req.query }
+    : { path: req.path, query: req.query, body: req.body };
 
   // `${req.path}@...` to make it easier to find keys on a Redis client
   return `${req.path}@${hash.sha1(reqDataToHash)}`;
