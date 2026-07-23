@@ -2,14 +2,16 @@
 
 Node.js Express API for profile management with GitHub OAuth, natural language search, and a CLI tool. Integrates Genderize.io, Agify.io, Nationalize.io, and REST Countries APIs with PostgreSQL + Redis.
 
-**API:** [https://ubiquitous-chainsaw-production-73a8.up.railway.app](https://ubiquitous-chainsaw-production-73a8.up.railway.app)
-**Web Portal:** [https://insighta-web-portal.up.railway.app](https://insighta-web-portal.up.railway.app/)
+<!-- **API:** [https://ubiquitous-chainsaw-production-73a8.up.railway.app](https://ubiquitous-chainsaw-production-73a8.up.railway.app) -->
+<!-- **Web Portal:** [https://insighta-web-portal.up.railway.app](https://insighta-web-portal.up.railway.app/) -->
+
+This powers two services: a [web portal](https://github.com/zub-bee/insighta-web-portal) and a [CLI tool](https://github.com/zub-bee/insighta-cli-tool)
 
 ## System Architecture
 
 Express.js → PostgreSQL + Redis → External APIs (Genderize, Agify, Nationalize, GitHub OAuth, REST Countries)
 
-Clients (Web Portal + CLI) → Middleware (CORS, Redis session, JWT auth, admin check) → Routes (`/auth`, `/api/profiles`, `/api/users`, `/api/classify`) → Data (PostgreSQL: profiles/users · Redis: sessions/token blacklist)
+Clients (Web Portal + CLI) -> Middleware (CORS, Redis session, JWT auth, admin check) -> Routes (`/auth`, `/api/profiles`, `/api/users`, `/api/classify`) -> Data (PostgreSQL: profiles/users · Redis: sessions/token blacklist)
 
 ## Authentication Flow
 
