@@ -24,16 +24,52 @@ This powers two services: a [web portal](https://github.com/zub-bee/insighta-web
 
 ## System Architecture
 
-Express.js → PostgreSQL + Redis → External APIs (Genderize, Agify, Nationalize, GitHub OAuth, REST Countries)
+<img width="541" height="241" alt="image" src="https://github.com/user-attachments/assets/ea499235-3ec5-4f43-88ef-c53df875edb3" />
 
-Clients (Web Portal + CLI) -> Middleware (CORS, Redis session, JWT auth, admin check) -> Routes (`/auth`, `/api/profiles`, `/api/users`, `/api/classify`) -> Data (PostgreSQL: profiles/users · Redis: sessions/token blacklist)
 
 ## Authentication Flow
 
 **GitHub OAuth 2.0 with PKCE (S256):**
 
-- **Web:** `GET /auth/github` generates a `state` nonce + PKCE challenge stored in the Redis session → GitHub redirects to `GET /auth/github/callback` → backend validates `state`, exchanges code + `code_verifier`, creates/retrieves user → sets HTTP-only cookies (`access_token` 3 min, `refresh_token` 5 min) → redirects to dashboard.
-- **CLI:** `insighta login` opens browser to `GET /auth/github` → user authorizes → CLI posts `{code, code_verifier}` to `POST /auth/github/cli/callback` → receives tokens in JSON → saved to `~/.insighta/credentials.json`.
+```markdown
+┌─────────────────────────────────────────────────────────────┐
+│                         Web OAuth Flow                      │
+│  GET /auth/github → generate state nonce + PKCE challenge   │
+└──────────────────────────────┬──────────────────────────────┘
+                               │ redirect user to GitHub
+┌──────────────────────────────▼──────────────────────────────┐
+│                       GitHub Authorization                   │
+│                       (user authorizes app)                 │
+└──────────────────────────────┬──────────────────────────────┘
+                               │ redirect to callback with code + state
+┌──────────────────────────────▼──────────────────────────────┐
+│                   GET /auth/github/callback                 │
+│  - validate state                                           │
+│  - exchange code + code_verifier                            │
+│  - create or retrieve user                                  │
+│  - set HTTP-only cookies: access_token (3 min),             │
+│    refresh_token (5 min)                                    │
+│  - redirect → /dashboard                                    │
+└─────────────────────────────────────────────────────────────┘
+
+
+┌─────────────────────────────────────────────────────────────┐
+│                          CLI OAuth Flow                     │
+│  insighta login → opens browser to GET /auth/github         │
+└──────────────────────────────┬──────────────────────────────┘
+                               │ user authorizes in browser
+┌──────────────────────────────▼──────────────────────────────┐
+│                       GitHub Authorization                   │
+│                       (user authorizes app)                 │
+└──────────────────────────────┬──────────────────────────────┘
+                               │ GitHub provides code to browser
+┌──────────────────────────────▼──────────────────────────────┐
+│ POST /auth/github/cli/callback (from CLI)                   │
+│  - body: { code, code_verifier }                            │
+│  - response: JSON { access_token, refresh_token, ... }      │
+│  - CLI saves tokens → ~/.insighta/credentials.json          │
+└─────────────────────────────────────────────────────────────┘
+```
 
 | Client     | Token transport                                                            |
 | ---------- | -------------------------------------------------------------------------- |
@@ -144,6 +180,8 @@ JWT_SECRET=your_jwt_secret
 REFRESH_SECRET=your_refresh_secret
 SESSION_SECRET=your_session_secret
 FRONTEND_URL=http://localhost:5500
+ACCESS_TOKEN_EXPIRY=3m
+REFRESH_TOKEN_EXPIRY=5m
 ```
 
 ```bash
