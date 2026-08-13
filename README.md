@@ -2,6 +2,21 @@
 
 Node.js Express API for profile management with GitHub OAuth, natural language search, and a CLI tool. Integrates Genderize.io, Agify.io, Nationalize.io, and REST Countries APIs with PostgreSQL + Redis.
 
+## Table of Contents
+
+- [System Architecture](#system-architecture)
+- [Authentication Flow](#authentication-flow)
+- [Token Handling](#token-handling)
+- [Role Enforcement](#role-enforcement)
+- [Multi-Interface Support](#multi-interface-support)
+- [Natural Language Parsing](#natural-language-parsing)
+- [Rate Limiting](#rate-limiting)
+- [Request Logging](#request-logging)
+- [CLI Usage](#cli-usage)
+- [API Endpoints](#api-endpoints)
+- [Setup](#setup)
+- [Stack & External APIs](#stack--external-apis)
+
 <!-- **API:** [https://ubiquitous-chainsaw-production-73a8.up.railway.app](https://ubiquitous-chainsaw-production-73a8.up.railway.app) -->
 <!-- **Web Portal:** [https://insighta-web-portal.up.railway.app](https://insighta-web-portal.up.railway.app/) -->
 
@@ -141,5 +156,22 @@ GitHub OAuth App → callback URL: `http://localhost:3000/auth/github/callback`.
 
 ---
 
-**Stack:** Node.js, Express 5, PostgreSQL, Redis, JWT, GitHub OAuth, Axios, json2csv, cli-table3, Ora  
-**External APIs:** Genderize.io, Agify.io, Nationalize.io, REST Countries
+## Stack & External APIs
+
+- Stack
+  - Node.js: https://nodejs.org/
+  - Express: https://expressjs.com/
+  - PostgreSQL: https://www.postgresql.org/
+  - Redis: https://redis.io/
+  - JSON Web Tokens (JWT): https://jwt.io/
+  - GitHub OAuth: https://docs.github.com/en/apps/oauth-apps
+  - Axios: https://github.com/axios/axios
+  - json2csv: https://github.com/zemirco/json2csv
+  - cli-table3: https://github.com/cli-table/cli-table3
+  - Ora: https://github.com/sindresorhus/ora
+
+- External APIs
+  - Genderize.io: https://genderize.io/
+  - Agify.io: https://agify.io/
+  - Nationalize.io: https://nationalize.io/
+  - REST Countries: https://restcountries.com/
