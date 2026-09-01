@@ -3,6 +3,8 @@ import cors from "cors";
 import express from "express";
 import session from "express-session";
 import cookieParser from "cookie-parser";
+import path from "path";
+import { fileURLToPath } from "url";
 import { RedisStore } from "connect-redis";
 import redisClient from "./db/redisClient.js";
 import { authenticateUser } from "./middlewares/authenticate.js";
@@ -16,14 +18,15 @@ import { redisCacheMiddleware } from "./middlewares/redis.js";
 import { normalizeSearchQuery } from "./middlewares/normalizeSearchQuery.js";
 import { authRouter } from "./routes/auth.js";
 import { authLimiter, apiLimiter } from "./middlewares/rateLimit.js";
+import { docRouter } from "./routes/swagger.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const PORT = process.env.PORT;
 
 const app = express();
 
-// Trust Railway's reverse proxy so req.secure is correct and express-session
-// sets Secure cookies properly.
-app.set("trust proxy", 1);
 
 app.use(
   cors({
@@ -87,14 +90,17 @@ app.use(
   usersRouter,
 );
 
-app.use((req, res) => {
-  res.status(404).json({
-    error: "Invalid endpoint",
-    message:
-      "Endpoint is invalid. Check the API documentation for more information",
-  });
+// Swagger UI documentation endpoint
+app.use(docRouter)
+
+// Serve OpenAPI spec
+app.get("/openapi.yaml", (req, res) => {
+  res.sendFile(path.join(__dirname, "openapi.yaml"));
 });
 
+app.use((req, res) => {
+  res.redirect("/docs")
+});
 await startServer();
 
 async function startServer() {
@@ -114,7 +120,7 @@ async function startServer() {
     }
 
     app.listen(PORT, "0.0.0.0", () =>
-      console.log(`This server is listening on port: ${PORT}`),
+      console.log(`This server is listening on port: ${PORT}. Check http://localhost:${PORT}`),
     );
   } catch (error) {
     console.error("Failed to start server:", error);
