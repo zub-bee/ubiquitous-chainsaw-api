@@ -19,6 +19,7 @@ import { normalizeSearchQuery } from "./middlewares/normalizeSearchQuery.js";
 import { authRouter } from "./routes/auth.js";
 import { authLimiter, apiLimiter } from "./middlewares/rateLimit.js";
 import { docRouter } from "./routes/swagger.js";
+import { helmet } from "helmet";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -39,6 +40,7 @@ app.use(
   }),
 );
 
+app.use(helmet());
 app.use(express.json());
 app.use(cookieParser());
 
@@ -92,7 +94,7 @@ app.use(
 );
 
 // Swagger UI documentation endpoint
-app.use(docRouter)
+app.use(docRouter);
 
 // Serve OpenAPI spec
 app.get("/openapi.yaml", (req, res) => {
@@ -100,7 +102,7 @@ app.get("/openapi.yaml", (req, res) => {
 });
 
 app.use((req, res) => {
-  res.redirect("/docs")
+  res.redirect("/docs");
 });
 await startServer();
 
@@ -121,7 +123,9 @@ async function startServer() {
     }
 
     app.listen(PORT, "0.0.0.0", () =>
-      console.log(`This server is listening on port: ${PORT}. Check http://localhost:${PORT}`),
+      console.log(
+        `This server is listening on port: ${PORT}. Check http://localhost:${PORT}`,
+      ),
     );
   } catch (error) {
     console.error("Failed to start server:", error);
